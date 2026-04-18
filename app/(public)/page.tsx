@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Trophy, Heart, Target, ArrowRight, Star, Quote, ChevronRight } from 'lucide-react';
+import { Trophy, Heart, Target, ArrowRight, Star, Quote, ChevronRight, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
