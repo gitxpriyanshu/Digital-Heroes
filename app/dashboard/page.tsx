@@ -15,31 +15,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createClientClient } from '@/lib/supabase';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { Suspense } from 'react';
 
-interface DashboardOverviewData {
-  subscription: {
-    plan: string;
-    status: string;
-    current_period_end: string;
-  } | null;
-  scores: { id: string }[];
-  winnings: {
-    status: string;
-    prize_amount: number;
-  }[];
-  charity: {
-    contribution_percentage: number;
-    charities: {
-      name: string;
-      logo_url: string;
-    };
-  } | null;
-}
-
-export default function DashboardOverview() {
+// Create a sub-component that uses useSearchParams
+function DashboardContent() {
   const [data, setData] = useState<DashboardOverviewData>({
     subscription: null,
     scores: [],
@@ -82,8 +63,10 @@ export default function DashboardOverview() {
   const totalWon = data.winnings.reduce((acc, win) => acc + Number(win.prize_amount), 0);
   const pendingVerification = data.winnings.filter((w) => w.status === 'pending').length;
 
+  if (loading) return <div className="h-96 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" /></div>;
+
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 uppercase-tracking">
       <header>
         <h1 className="text-4xl font-black tracking-tight mb-2">Impact Overview</h1>
         <p className="text-white/40">You're making a difference. Here's your hero report.</p>
@@ -179,6 +162,15 @@ export default function DashboardOverview() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main Page Component with Suspense
+export default function DashboardOverview() {
+  return (
+    <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" /></div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
 
