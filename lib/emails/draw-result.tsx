@@ -1,6 +1,11 @@
 import React from 'react';
 
-export const DrawResultEmail = ({ winningNumbers, drawMonth }: any) => (
+interface DrawResultEmailProps {
+  winningNumbers: number[];
+  drawMonth: string;
+}
+
+export const DrawResultEmail = ({ winningNumbers, drawMonth }: DrawResultEmailProps) => (
   <div style={{ fontFamily: 'sans-serif', backgroundColor: '#000', color: '#fff', padding: '40px', textAlign: 'center' }}>
     <h1 style={{ color: '#10b981' }}>Monthly Draw Results</h1>
     <p>The results for {drawMonth} are in!</p>

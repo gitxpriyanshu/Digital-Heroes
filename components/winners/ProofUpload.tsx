@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, CheckCircle2, Loader2, AlertCircle, FileText } from 'lucide-react';
+import { CheckCircle2, Loader2, AlertCircle, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createClientClient } from '@/lib/supabase';
 
@@ -25,7 +25,7 @@ export default function ProofUpload({ winnerId, onUploadSuccess }: { winnerId: s
       const fileName = `${winnerId}-${Math.random()}.${fileExt}`;
       const filePath = `winner-proofs/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('winner-proofs')
         .upload(filePath, file);
 
@@ -49,8 +49,8 @@ export default function ProofUpload({ winnerId, onUploadSuccess }: { winnerId: s
 
       setSuccess(true);
       onUploadSuccess();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError((err as Error).message);
     } finally {
       setUploading(false);
     }

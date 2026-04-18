@@ -92,10 +92,16 @@ export async function calculateWinners(winningNumbers: number[]) {
   return finalists;
 }
 
+interface WinnerLists {
+  fiveMatch: string[];
+  fourMatch: string[];
+  threeMatch: string[];
+}
+
 /**
  * Calculates prize amounts for each winner in each tier.
  */
-export function calculatePrizes(prizePool: { five: number, four: number, three: number }, winners: any) {
+export function calculatePrizes(prizePool: { five: number, four: number, three: number }, winners: WinnerLists) {
   return {
     fiveMatchAmount: winners.fiveMatch.length > 0 ? prizePool.five / winners.fiveMatch.length : 0,
     fourMatchAmount: winners.fourMatch.length > 0 ? prizePool.four / winners.fourMatch.length : 0,
