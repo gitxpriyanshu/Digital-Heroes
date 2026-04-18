@@ -15,7 +15,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/utils/supabase/client';
+import { createClientClient } from '@/lib/supabase';
 
 interface UserProfile {
   full_name: string;
@@ -44,7 +44,7 @@ export default function AdminWinners() {
   const [selectedWin, setSelectedWin] = useState<Winner | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = createClientClient();
 
   useEffect(() => {
     async function fetchWinners() {
