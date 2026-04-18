@@ -214,7 +214,14 @@ export default function HomePage() {
   );
 }
 
-function StepCard({ number, icon, title, desc }: any) {
+interface StepCardProps {
+  number: string;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}
+
+function StepCard({ number, icon, title, desc }: StepCardProps) {
   return (
     <motion.div
       whileHover={{ y: -10 }}
@@ -243,7 +250,13 @@ function FeatureItem({ label }: { label: string }) {
   );
 }
 
-function TestimonialCard({ quote, author, role }: any) {
+interface TestimonialCardProps {
+  quote: string;
+  author: string;
+  role: string;
+}
+
+function TestimonialCard({ quote, author, role }: TestimonialCardProps) {
   return (
     <div className="p-10 rounded-[2.5rem] bg-white/[0.02] border border-white/5 relative">
       <Quote className="text-white/5 absolute top-10 right-10 w-12 h-12" />
@@ -259,7 +272,7 @@ function TestimonialCard({ quote, author, role }: any) {
   );
 }
 
-function CreditCard(props: any) {
+function CreditCard(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-credit-card"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
   );

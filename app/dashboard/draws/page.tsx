@@ -6,12 +6,31 @@ import { Award, Trophy, History, Clock, FileText, CheckCircle2, AlertCircle } fr
 import { createClientClient } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 
+interface DashboardWinner {
+  id: string;
+  draw_id: string;
+  match_type: string;
+  prize_amount: number;
+  status: 'pending' | 'verified' | 'paid' | 'rejected';
+  draws: {
+    draw_month: string;
+  };
+}
+
+interface DashboardData {
+  winners: DashboardWinner[];
+  myNumbers: number[];
+  currentDraw: {
+    draw_month: string;
+    prize_pool_total: number;
+  } | null;
+}
+
 export default function DrawsDashboard() {
-  const [data, setData] = useState<any>({
+  const [data, setData] = useState<DashboardData>({
     winners: [],
-    drawEntries: [],
+    myNumbers: [],
     currentDraw: null,
-    myNumbers: []
   });
   const [loading, setLoading] = useState(true);
   const supabase = createClientClient();
@@ -121,7 +140,7 @@ export default function DrawsDashboard() {
                   </td>
                 </tr>
               ) : (
-                data.winners.map((win: any) => (
+                data.winners.map((win) => (
                   <tr key={win.id} className="hover:bg-white/[0.01] transition-colors">
                     <td className="px-8 py-6 font-bold">{new Date(win.draws.draw_month).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</td>
                     <td className="px-8 py-6">

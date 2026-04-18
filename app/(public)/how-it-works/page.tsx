@@ -122,7 +122,13 @@ export default function HowItWorksPage() {
   );
 }
 
-function ScoreValue({ points, label, color }: any) {
+interface ScoreValueProps {
+  points: number;
+  label: string;
+  color: string;
+}
+
+function ScoreValue({ points, label, color }: ScoreValueProps) {
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-white/5">
       <span className="text-sm font-bold text-white/60">{label}</span>
@@ -140,7 +146,14 @@ function ListItem({ text }: { text: string }) {
   );
 }
 
-function TierCard({ match, pool, label, desc }: any) {
+interface TierCardProps {
+  match: string;
+  pool: string;
+  label: string;
+  desc: string;
+}
+
+function TierCard({ match, pool, label, desc }: TierCardProps) {
   return (
     <div className="p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/10 flex flex-col items-center text-center">
       <div className="w-20 h-20 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center mb-8">
@@ -155,7 +168,13 @@ function TierCard({ match, pool, label, desc }: any) {
   );
 }
 
-function DistributionItem({ label, percent, desc }: any) {
+interface DistributionItemProps {
+  label: string;
+  percent: string;
+  desc: string;
+}
+
+function DistributionItem({ label, percent, desc }: DistributionItemProps) {
   return (
     <div>
       <div className="flex justify-between items-end mb-2">

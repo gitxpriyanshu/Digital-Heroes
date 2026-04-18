@@ -11,7 +11,8 @@ import {
   ArrowUpRight,
   TrendingUp,
   Clock,
-  ExternalLink
+  ExternalLink,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createClientClient } from '@/lib/supabase';
@@ -140,7 +141,14 @@ export default function AdminOverview() {
   );
 }
 
-function StatCard({ label, value, change, icon }: any) {
+interface StatCardProps {
+  label: string;
+  value: string;
+  change: string;
+  icon: React.ReactNode;
+}
+
+function StatCard({ label, value, change, icon }: StatCardProps) {
   return (
     <div className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all">
       <div className="flex justify-between items-start mb-6">
@@ -156,8 +164,15 @@ function StatCard({ label, value, change, icon }: any) {
   );
 }
 
-function ActionButton({ title, subtitle, href, variant }: any) {
-  const colors: any = {
+interface ActionButtonProps {
+  title: string;
+  subtitle: string;
+  href: string;
+  variant: 'emerald' | 'amber' | 'white';
+}
+
+function ActionButton({ title, subtitle, href, variant }: ActionButtonProps) {
+  const colors: Record<ActionButtonProps['variant'], string> = {
     emerald: 'bg-emerald-500 text-black hover:bg-emerald-400',
     amber: 'bg-amber-500 text-black hover:bg-amber-400',
     white: 'bg-white text-black hover:bg-white/90'
@@ -176,7 +191,14 @@ function ActionButton({ title, subtitle, href, variant }: any) {
   );
 }
 
-function ActivityRow({ user, action, time, icon }: any) {
+interface ActivityRowProps {
+  user: string;
+  action: string;
+  time: string;
+  icon: React.ReactNode;
+}
+
+function ActivityRow({ user, action, time, icon }: ActivityRowProps) {
   return (
     <div className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0">
       <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">

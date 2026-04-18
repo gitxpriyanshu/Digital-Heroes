@@ -135,7 +135,13 @@ export default function AdminReports() {
   );
 }
 
-function ReportStat({ label, value, detail }: any) {
+interface ReportStatProps {
+  label: string;
+  value: string;
+  detail: string;
+}
+
+function ReportStat({ label, value, detail }: ReportStatProps) {
   return (
     <div className="flex justify-between items-end border-b border-emerald-500/10 pb-4">
       <div>

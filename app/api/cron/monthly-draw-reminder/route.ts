@@ -23,7 +23,7 @@ export async function GET(req: Request) {
 
   // 2. Send reminders (Batching would be better for high volumes)
   const results = await Promise.allSettled(
-    subs.map(async (sub: any) => {
+    subs.map(async (sub) => {
       if (!sub.users?.email) return;
       
       return resend.emails.send({

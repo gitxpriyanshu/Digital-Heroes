@@ -17,8 +17,28 @@ import { Button } from '@/components/ui/button';
 import { createClientClient } from '@/lib/supabase';
 import Link from 'next/link';
 
+interface DashboardOverviewData {
+  subscription: {
+    plan: string;
+    status: string;
+    current_period_end: string;
+  } | null;
+  scores: { id: string }[];
+  winnings: {
+    status: string;
+    prize_amount: number;
+  }[];
+  charity: {
+    contribution_percentage: number;
+    charities: {
+      name: string;
+      logo_url: string;
+    };
+  } | null;
+}
+
 export default function DashboardOverview() {
-  const [data, setData] = useState<any>({
+  const [data, setData] = useState<DashboardOverviewData>({
     subscription: null,
     scores: [],
     winnings: [],
@@ -50,8 +70,8 @@ export default function DashboardOverview() {
     loadDashboardData();
   }, [supabase]);
 
-  const totalWon = data.winnings.reduce((acc: number, win: any) => acc + Number(win.prize_amount), 0);
-  const pendingVerification = data.winnings.filter((w: any) => w.status === 'pending').length;
+  const totalWon = data.winnings.reduce((acc, win) => acc + Number(win.prize_amount), 0);
+  const pendingVerification = data.winnings.filter((w) => w.status === 'pending').length;
 
   return (
     <div className="space-y-10">
@@ -147,7 +167,15 @@ export default function DashboardOverview() {
   );
 }
 
-function StatCard({ title, value, subtext, icon, action }: any) {
+interface StatCardProps {
+  title: string;
+  value: string;
+  subtext: string;
+  icon: React.ReactElement;
+  action?: React.ReactNode;
+}
+
+function StatCard({ title, value, subtext, icon, action }: StatCardProps) {
   return (
     <div className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-all group">
       <div className="flex justify-between items-start mb-6">

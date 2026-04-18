@@ -7,10 +7,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClientClient } from '@/lib/supabase';
 
+interface UserSubscription {
+  status: string;
+  plan: string;
+}
+
+interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  created_at: string;
+  subscriptions?: UserSubscription[];
+  scores?: { count: number }[];
+}
+
 export default function AdminUsers() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState('');
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const supabase = createClientClient();

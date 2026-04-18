@@ -157,7 +157,16 @@ export default function PrizesPage() {
   );
 }
 
-function PrizeTierCard({ title, amount, match, status, color, icon }: any) {
+interface PrizeTierCardProps {
+  title: string;
+  amount: string;
+  match: string;
+  status: string;
+  color: string;
+  icon: React.ReactNode;
+}
+
+function PrizeTierCard({ title, amount, match, status, color, icon }: PrizeTierCardProps) {
   return (
     <div className={`p-10 rounded-[3rem] border flex flex-col items-center text-center transition-all hover:scale-105 ${color}`}>
       <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/5">

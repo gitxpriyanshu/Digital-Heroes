@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 
 export default function SubscribePage() {
   const [loading, setLoading] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const router = useRouter();
   const supabase = createClientClient();
 
@@ -105,9 +105,22 @@ export default function SubscribePage() {
   );
 }
 
+interface PricingCardProps {
+  title: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  highlight?: boolean;
+  savings?: string;
+  onAction: () => void;
+  isLoading: boolean;
+  icon: React.ReactNode;
+}
+
 function PricingCard({ 
   title, price, period, description, features, highlight, savings, onAction, isLoading, icon 
-}: any) {
+}: PricingCardProps) {
   return (
     <motion.div
       whileHover={{ y: -10 }}

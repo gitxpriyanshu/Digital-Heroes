@@ -11,15 +11,31 @@ import {
   Eye, 
   Loader2,
   X,
-  CreditCard
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { createClientClient } from '@/lib/supabase';
+interface UserProfile {
+  full_name: string;
+  email: string;
+}
+
+interface DrawCycle {
+  draw_month: string;
+}
+
+interface Winner {
+  id: string;
+  user_id: string;
+  prize_amount: number;
+  match_type: string;
+  status: 'pending' | 'verified' | 'paid' | 'rejected';
+  proof_url: string | null;
+  users: UserProfile;
+  draws: DrawCycle;
+  created_at: string;
+}
 
 export default function AdminWinners() {
-  const [winners, setWinners] = useState<any[]>([]);
+  const [winners, setWinners] = useState<Winner[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWin, setSelectedWin] = useState<any>(null);
+  const [selectedWin, setSelectedWin] = useState<Winner | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
 
   const supabase = createClientClient();
@@ -207,8 +223,8 @@ export default function AdminWinners() {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const configs: any = {
+function StatusBadge({ status }: { status: Winner['status'] }) {
+  const configs: Record<Winner['status'], string> = {
     pending: 'bg-amber-500/10 border-amber-500/30 text-amber-500',
     verified: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-500',
     paid: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',

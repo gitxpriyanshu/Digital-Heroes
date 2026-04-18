@@ -52,7 +52,7 @@ export default function ScoreEntry({ onScoreAdded }: { onScoreAdded: () => void 
       toast.success('Score saved successfully! Hope it was a great round.');
       reset();
       onScoreAdded();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setLoading(false);
