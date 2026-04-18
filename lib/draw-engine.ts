@@ -59,18 +59,27 @@ export function matchNumbers(userNumbers: number[], winningNumbers: number[]): n
 export async function calculateWinners(winningNumbers: number[]) {
   const supabase = getServiceRoleClient();
 
-  // 1. Get all users who have exactly 5 scores
-  const { data: userScores, error } = await supabase
-    .from('scores')
-    .select('user_id, score');
+  // 1. Get all eligible users (Active sub + Charity selected)
+  const [subRes, charityRes, scoreRes] = await Promise.all([
+    supabase.from('subscriptions').select('user_id, status').eq('status', 'active'),
+    supabase.from('charity_selections').select('user_id'),
+    supabase.from('scores').select('user_id, score, score_date')
+  ]);
 
-  if (error) throw error;
+  if (scoreRes.error) throw scoreRes.error;
 
-  // 2. Group scores by user
-  const grouped: Record<string, number[]> = {};
-  userScores.forEach(s => {
-    if (!grouped[s.user_id]) grouped[s.user_id] = [];
-    grouped[s.user_id].push(s.score);
+  const activeUserIds = new Set((subRes.data || []).map(s => s.user_id));
+  const charityUserIds = new Set((charityRes.data || []).map(c => c.user_id));
+
+  // 2. Group scores by eligible user ONLY, keeping track of dates
+  const grouped: Record<string, {score: number, date: string}[]> = {};
+  
+  (scoreRes.data || []).forEach(s => {
+    // ONLY collect scores for users fully subscribed WITH a charity
+    if (activeUserIds.has(s.user_id) && charityUserIds.has(s.user_id)) {
+      if (!grouped[s.user_id]) grouped[s.user_id] = [];
+      grouped[s.user_id].push({ score: s.score, date: s.score_date });
+    }
   });
 
   const finalists = {
@@ -79,10 +88,16 @@ export async function calculateWinners(winningNumbers: number[]) {
     threeMatch: [] as string[],
   };
 
-  // 3. Filter for exactly 5 and match
-  Object.entries(grouped).forEach(([userId, numbers]) => {
-    if (numbers.length === 5) {
-      const matchCount = matchNumbers(numbers, winningNumbers);
+  // 3. Filter for exactly 5 recent scores and match
+  Object.entries(grouped).forEach(([userId, scoreObjects]) => {
+    // Sort by date descending to get the most recent
+    scoreObjects.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    // Take EXACTLY the 5 most recent scores
+    const recentScores = scoreObjects.slice(0, 5).map(so => so.score);
+
+    if (recentScores.length === 5) {
+      const matchCount = matchNumbers(recentScores, winningNumbers);
       if (matchCount === 5) finalists.fiveMatch.push(userId);
       else if (matchCount === 4) finalists.fourMatch.push(userId);
       else if (matchCount === 3) finalists.threeMatch.push(userId);

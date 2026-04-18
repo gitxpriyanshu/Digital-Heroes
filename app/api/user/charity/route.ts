@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase-server';
+import { createServerClient, getServiceRoleClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -44,6 +44,11 @@ export async function POST(req: Request) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Sync JWT Metadata for Edge zero-latency routing
+    const adminSupabase = getServiceRoleClient();
+    await adminSupabase.auth.admin.updateUserById(session.user.id, { user_metadata: { has_charity: true } });
+
     return NextResponse.json(data);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });

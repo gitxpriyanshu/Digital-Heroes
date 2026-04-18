@@ -39,6 +39,19 @@ export async function POST(req: Request) {
     const json = await req.json();
     const { score, score_date } = scoreSchema.parse(json);
 
+    // Flow Validation: Must be active and have charity
+    const [subCheck, charityCheck] = await Promise.all([
+      supabase.from('subscriptions').select('status').eq('user_id', session.user.id).maybeSingle(),
+      supabase.from('charity_selections').select('charity_id').eq('user_id', session.user.id).maybeSingle()
+    ]);
+    
+    if (!subCheck.data || subCheck.data.status !== 'active') {
+      return NextResponse.json({ error: 'Active subscription required. Flow violated.' }, { status: 403 });
+    }
+    if (!charityCheck.data) {
+      return NextResponse.json({ error: 'Charity selection required. Flow violated.' }, { status: 403 });
+    }
+
     // Check for duplicate date for this user
     const { data: existing } = await supabase
       .from('scores')

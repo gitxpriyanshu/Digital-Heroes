@@ -81,16 +81,21 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // Check Subscription Status for Dashboard
+    // Check Subscription and Charity Status from Secure JWT payload (Zero-DB lookup)
     if (isDashboard) {
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
+      const isSubscribed = session.user.user_metadata?.is_subscribed === true;
+      const hasCharity = session.user.user_metadata?.has_charity === true;
 
-      if (!subscription || subscription.status !== 'active') {
+      if (!isSubscribed) {
+        url.searchParams.set('redirect', pathname);
         url.pathname = '/subscribe';
+        return NextResponse.redirect(url);
+      }
+
+      // If subscribed but no charity, forces them to select charity (excluding the charity selection page itself)
+      if (isSubscribed && !hasCharity && pathname !== '/dashboard/charity') {
+        url.searchParams.set('forced', 'true');
+        url.pathname = '/dashboard/charity';
         return NextResponse.redirect(url);
       }
     }

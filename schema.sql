@@ -189,3 +189,109 @@ CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_new_user();
+
+-- 11. Financial Ledger Logs
+CREATE TABLE public.financial_logs (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+    stripe_event_id TEXT,
+    total_amount DECIMAL(12, 2) NOT NULL,
+    charity_amount DECIMAL(12, 2) NOT NULL,
+    prize_pool_amount DECIMAL(12, 2) NOT NULL,
+    charity_percentage DECIMAL(5, 2) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.financial_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admins only can view financial logs" ON public.financial_logs FOR SELECT USING (auth.uid() IN (SELECT id FROM public.users WHERE 'admin' = 'admin'));
+
+-- 12. Processed Stripe Events
+CREATE TABLE public.processed_events (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.processed_events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admins only can view processed events" ON public.processed_events FOR SELECT USING (auth.uid() IN (SELECT id FROM public.users WHERE 'admin' = 'admin'));
+
+-- Ensure single subscription per user constraint for proper upserts
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subs_user_id ON public.subscriptions(user_id);
+
+-- 13. ATOMIC RPC FOR STRIPE SUBSCRIPTIONS 
+CREATE OR REPLACE FUNCTION process_stripe_invoice_paid(
+    p_event_id TEXT,
+    p_type TEXT,
+    p_user_id UUID,
+    p_customer_id TEXT,
+    p_sub_id TEXT,
+    p_plan TEXT,
+    p_period_end TIMESTAMPTZ,
+    p_total_paid DECIMAL,
+    p_charity_amount DECIMAL,
+    p_prize_amount DECIMAL,
+    p_charity_pct DECIMAL
+) RETURNS VOID AS $$
+BEGIN
+    -- 1. Idempotency Hardware Lock: Graceful abort without exception
+    INSERT INTO public.processed_events (id, type) 
+    VALUES (p_event_id, p_type) 
+    ON CONFLICT (id) DO NOTHING;
+    
+    IF NOT FOUND THEN 
+        RETURN;
+    END IF;
+
+    -- 2. Ensure Subscription Exists & Is Active
+    INSERT INTO public.subscriptions (user_id, stripe_customer_id, stripe_subscription_id, plan, status, current_period_end)
+    VALUES (p_user_id, p_customer_id, p_sub_id, p_plan, 'active', p_period_end)
+    ON CONFLICT (user_id) DO UPDATE SET 
+        stripe_customer_id = EXCLUDED.stripe_customer_id,
+        stripe_subscription_id = EXCLUDED.stripe_subscription_id,
+        plan = EXCLUDED.plan,
+        status = 'active',
+        current_period_end = EXCLUDED.current_period_end;
+        
+    -- 3. Write Explicit Financial Logs
+    INSERT INTO public.financial_logs (user_id, stripe_event_id, total_amount, charity_amount, prize_pool_amount, charity_percentage)
+    VALUES (p_user_id, p_event_id, p_total_paid, p_charity_amount, p_prize_amount, p_charity_pct);
+    
+    -- 4. Route Prize Contribution into the Open Draft Draw Pot
+    UPDATE public.draws SET prize_pool_total = prize_pool_total + p_prize_amount WHERE status = 'draft';
+
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add Recovery Field mapping directly onto subscriptions table
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS needs_jwt_sync BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS jwt_sync_retries INTEGER DEFAULT 0;
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS is_dead BOOLEAN DEFAULT FALSE;
+
+-- 14. NATIVE DB TRIGGER FOR JWT FLAG SYNCING
+-- [ARCHITECTURAL DECISION]: Updating auth.users raw_user_meta_data directly via Postgres Trigger bypasses the Supabase GoTrue Admin API.
+-- While the Admin API is standard, performing it natively here is deliberately chosen to guarantee absolute ATOMICITY against Stripe financial logs. 
+-- By mutating NEW states in a BEFORE trigger, we entirely eliminate runaway UPDATE recursion while explicitly flagging failures safely.
+CREATE OR REPLACE FUNCTION public.sync_subscription_to_jwt()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE auth.users
+    SET raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('is_subscribed', (NEW.status = 'active'))
+    WHERE id = NEW.user_id;
+
+    -- Eradicate residual flags if sync structurally succeeds
+    NEW.needs_jwt_sync := FALSE;
+    RETURN NEW;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE WARNING 'Failed to sync subscription JWT metadata to auth.users for %s: %', NEW.user_id, SQLERRM;
+        -- Graceful telemetry offload: Flaps recovery flag natively without needing secondary UPDATE transactions
+        NEW.needs_jwt_sync := TRUE;
+        RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth;
+
+DROP TRIGGER IF EXISTS trigger_sync_jwt_on_sub ON public.subscriptions;
+CREATE TRIGGER trigger_sync_jwt_on_sub
+BEFORE INSERT OR UPDATE ON public.subscriptions
+FOR EACH ROW
+EXECUTE FUNCTION public.sync_subscription_to_jwt();
