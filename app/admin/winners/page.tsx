@@ -11,6 +11,12 @@ import {
   Eye, 
   Loader2,
   X,
+  AlertCircle,
+  CreditCard
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { createClient } from '@/utils/supabase/client';
+
 interface UserProfile {
   full_name: string;
   email: string;
@@ -38,7 +44,7 @@ export default function AdminWinners() {
   const [selectedWin, setSelectedWin] = useState<Winner | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  const supabase = createClientClient();
+  const supabase = createClient();
 
   useEffect(() => {
     async function fetchWinners() {
