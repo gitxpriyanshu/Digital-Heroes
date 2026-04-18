@@ -19,11 +19,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createClientClient } from '@/lib/supabase';
 
+interface Charity {
+  id: string;
+  name: string;
+  logo_url: string;
+  website: string;
+  description: string;
+  is_featured: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
 export default function AdminCharities() {
-  const [charities, setCharities] = useState<any[]>([]);
+  const [charities, setCharities] = useState<Charity[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingCharity, setEditingCharity] = useState<any>(null);
+  const [editingCharity, setEditingCharity] = useState<Charity | null>(null);
   const [saving, setSaving] = useState(false);
 
   const supabase = createClientClient();

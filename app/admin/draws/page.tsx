@@ -23,11 +23,20 @@ import { Label } from '@/components/ui/label';
 import { createClientClient } from '@/lib/supabase';
 import { toast } from 'sonner';
 
+interface Draw {
+  id: string;
+  draw_month: string;
+  status: 'draft' | 'published';
+  draw_logic: 'random' | 'algorithmic';
+  prize_pool_total: number;
+  jackpot_carried?: number;
+}
+
 export default function AdminDraws() {
-  const [draws, setDraws] = useState<any[]>([]);
+  const [draws, setDraws] = useState<Draw[]>([]);
   const [loading, setLoading] = useState(true);
   const [simulating, setSimulating] = useState(false);
-  const [simulationData, setSimulationData] = useState<any>(null);
+  const [simulationData, setSimulationData] = useState<any>(null); // Keep any for raw simulation result temporarily or define deep type
   const [publishing, setPublishing] = useState(false);
 
   // New Draw Modal State
@@ -85,8 +94,8 @@ export default function AdminDraws() {
       setShowCreateModal(false);
       setNewDraw({ draw_month: '', draw_logic: 'random', prize_pool_total: '' });
       await fetchDraws();
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setCreating(false);
     }
@@ -384,7 +393,13 @@ export default function AdminDraws() {
   );
 }
 
-function WinnerStat({ label, count, amount }: any) {
+interface WinnerStatProps {
+  label: string;
+  count: number;
+  amount: number;
+}
+
+function WinnerStat({ label, count, amount }: WinnerStatProps) {
   return (
     <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
       <div>
