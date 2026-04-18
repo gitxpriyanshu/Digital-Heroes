@@ -5,9 +5,32 @@ import ScoreEntry from '@/components/scores/ScoreEntry';
 import ScoreList from '@/components/scores/ScoreList';
 import { Info, Target, HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { createClientClient } from '@/lib/supabase';
+import { AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ScoresDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [hasSub, setHasSub] = useState(true);
+  const [hasCharity, setHasCharity] = useState(true);
+  
+  const supabase = createClientClient();
+
+  React.useEffect(() => {
+    async function checkFlow() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const [subData, charityData] = await Promise.all([
+        supabase.from('subscriptions').select('status').eq('user_id', user.id).maybeSingle(),
+        supabase.from('charity_selections').select('id').eq('user_id', user.id).maybeSingle()
+      ]);
+
+      if (!subData.data || subData.data.status !== 'active') setHasSub(false);
+      if (!charityData.data) setHasCharity(false);
+    }
+    checkFlow();
+  }, [supabase]);
 
   const handleScoreAdded = () => {
     setRefreshKey(prev => prev + 1);
@@ -39,8 +62,24 @@ export default function ScoresDashboard() {
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-5">
-          <ScoreEntry onScoreAdded={handleScoreAdded} />
+        <div className="lg:col-span-5 relative">
+          {(!hasSub || !hasCharity) && (
+            <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center p-6 text-center border border-white/5">
+              <AlertCircle className="w-10 h-10 text-rose-400 mb-4" />
+              <h3 className="font-bold text-lg mb-2">Requirement Missing</h3>
+              <p className="text-sm text-white/60 mb-4">
+                {!hasSub 
+                  ? 'You must have an active subscription to submit scores to the draw.' 
+                  : 'You must select a supporting charity before entering your scores.'}
+              </p>
+              <Link href={!hasSub ? "/subscribe" : "/dashboard/charity"} className="bg-emerald-500 text-black px-6 py-2 rounded-xl font-bold text-sm hover:bg-emerald-400 transition-colors">
+                {!hasSub ? 'Subscribe Now' : 'Select Charity'}
+              </Link>
+            </div>
+          )}
+          <div className={(!hasSub || !hasCharity) ? 'opacity-30 pointer-events-none' : ''}>
+            <ScoreEntry onScoreAdded={handleScoreAdded} />
+          </div>
         </div>
         <div className="lg:col-span-7">
           <ScoreList refreshKey={refreshKey} />

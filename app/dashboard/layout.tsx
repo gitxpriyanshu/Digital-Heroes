@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, 
@@ -26,20 +26,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const supabase = createClientClient();
 
+  const router = useRouter();
+
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-      setSubStatus(sub);
+      const [subRes, charityRes] = await Promise.all([
+        supabase.from('subscriptions').select('*').eq('user_id', user?.id).maybeSingle(),
+        supabase.from('charity_selections').select('charity_id').eq('user_id', user?.id).maybeSingle()
+      ]);
+
+      setSubStatus(subRes.data);
     }
     loadData();
-  }, [supabase]);
+  }, [supabase, pathname]);
 
   const navItems = [
     { name: 'Overview', href: '/dashboard', icon: <LayoutDashboard /> },

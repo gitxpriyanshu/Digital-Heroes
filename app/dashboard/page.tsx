@@ -16,6 +16,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { createClientClient } from '@/lib/supabase';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface DashboardOverviewData {
   subscription: {
@@ -46,6 +48,13 @@ export default function DashboardOverview() {
   });
   const [loading, setLoading] = useState(true);
   const supabase = createClientClient();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('subscribed') === 'true') {
+      toast.success('Subscription active! Welcome to the community. Please select your charity below.');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -84,10 +93,16 @@ export default function DashboardOverview() {
         {/* Subscription Card */}
         <StatCard 
           title="Subscription"
-          value={data.subscription?.plan === 'yearly' ? 'Yearly Legend' : 'Monthly Hero'}
-          subtext={data.subscription?.status === 'active' ? `Renews ${new Date(data.subscription.current_period_end).toLocaleDateString()}` : 'No active plan'}
-          icon={<CreditCard className="text-emerald-400" />}
-          action={<Button variant="ghost" className="h-8 px-3 text-xs font-bold border border-white/10 rounded-lg">Manage</Button>}
+          value={data.subscription?.status === 'active' ? (data.subscription.plan === 'yearly' ? 'Yearly Legend' : 'Monthly Hero') : 'No Active Plan'}
+          subtext={data.subscription?.status === 'active' ? `Renews ${new Date(data.subscription.current_period_end).toLocaleDateString()}` : 'Subscribe to start your impact'}
+          icon={<CreditCard className={data.subscription?.status === 'active' ? "text-emerald-400" : "text-white/40"} />}
+          action={
+            <Link href="/subscribe">
+              <Button variant={data.subscription?.status === 'active' ? "ghost" : "default"} className={data.subscription?.status === 'active' ? "h-8 px-3 text-xs font-bold border border-white/10 rounded-lg" : "h-8 px-4 text-xs font-bold bg-emerald-500 text-black rounded-lg hover:bg-emerald-400"}>
+                {data.subscription?.status === 'active' ? 'Manage' : 'Subscribe Now'}
+              </Button>
+            </Link>
+          }
         />
 
         {/* Score Progress */}

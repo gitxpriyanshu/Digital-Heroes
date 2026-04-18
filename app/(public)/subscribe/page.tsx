@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Zap, Crown, Loader2 } from 'lucide-react';
+import { Check, Zap, Crown, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createClientClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -10,15 +10,30 @@ import { useRouter } from 'next/navigation';
 export default function SubscribePage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [user, setUser] = useState<{ id: string } | null>(null);
+  const [subStatus, setSubStatus] = useState<string | null>(null);
+  const [subPlan, setSubPlan] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClientClient();
 
   useEffect(() => {
-    const getUser = async () => {
+    const getUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      
+      if (user) {
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('status, plan')
+          .eq('user_id', user.id)
+          .maybeSingle();
+          
+        if (sub) {
+          setSubStatus(sub.status);
+          setSubPlan(sub.plan);
+        }
+      }
     };
-    getUser();
+    getUserData();
   }, [supabase.auth]);
 
   const handleSubscribe = async (plan: 'monthly' | 'yearly') => {
@@ -50,7 +65,7 @@ export default function SubscribePage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-32 pb-20 px-6">
-      <div className="max-w-7xl mx-auto text-center mb-20">
+      <div className="max-w-7xl mx-auto text-center mb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -62,7 +77,43 @@ export default function SubscribePage() {
         </motion.div>
       </div>
 
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+      {subStatus && ['incomplete', 'incomplete_expired'].includes(subStatus) && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-3xl mx-auto mb-12 bg-rose-500/10 border border-rose-500/20 p-6 rounded-2xl flex items-start gap-5 text-left"
+        >
+          <div className="p-3 bg-rose-500/20 rounded-full shrink-0">
+            <AlertTriangle className="w-6 h-6 text-rose-500" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-rose-400 mb-2">Action Required: Payment Verification Failed</h3>
+            <p className="text-white/70 mb-5 leading-relaxed">
+              Your previous subscription attempt was blocked by your bank or failed 3D-Secure authentication. 
+              Your dashboard access remains restricted until a valid payment method is confirmed.
+            </p>
+            {subPlan ? (
+              <Button
+                onClick={() => handleSubscribe(subPlan as 'monthly' | 'yearly')}
+                disabled={loading !== null}
+                className="bg-rose-500 text-black hover:bg-rose-400 font-bold px-8 h-12 text-base rounded-xl shadow-lg shadow-rose-500/20 transition-all border border-rose-400"
+              >
+                {loading !== null ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
+                Retry Subscription
+              </Button>
+            ) : (
+              <Button
+                onClick={() => document.getElementById('pricing-tiers')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 hover:text-white font-bold px-8 h-12 text-base rounded-xl border border-rose-500/30 transition-all"
+              >
+                Please select a plan to continue &darr;
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      <div id="pricing-tiers" className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Monthly Plan */}
         <PricingCard 
           title="Monthly Hero"

@@ -44,8 +44,8 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             className="mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Next Draw: May 31, 2026</span>
+            <Heart className="w-4 h-4 text-rose-500 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Empowering 10+ Grassroots Charities Daily</span>
           </motion.div>
 
           <motion.h1
@@ -55,7 +55,7 @@ export default function HomePage() {
             className="text-6xl md:text-9xl font-black tracking-tighter mb-8 leading-[0.9]"
           >
             Play Golf. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f4c35] via-[#228b63] to-[#0f4c35]">Do Good.</span> <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-orange-400 to-rose-500">Change Lives.</span> <br />
             Win Big.
           </motion.h1>
 
@@ -63,9 +63,9 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-white/40 text-xl md:text-2xl max-w-2xl mx-auto mb-12 leading-relaxed"
+            className="text-white/90 text-xl md:text-2xl max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            The world's first subscription-based golf platform where every round you play fuels real-world impact and gives you a shot at a massive monthly jackpot.
+            Play the game you love to fund the causes that matter. Every subscription directly supports community sports programs, while giving you an entry into an exclusive monthly jackpot.
           </motion.p>
 
           <motion.div
@@ -87,7 +87,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-6xl font-black mb-6">The Cycle of Impact</h2>
-            <p className="text-white/40 max-w-xl mx-auto">Simple for you, life-changing for them.</p>
+            <p className="text-white/80 max-w-xl mx-auto">Simple for you, life-changing for them.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
@@ -119,11 +119,11 @@ export default function HomePage() {
           <div className="mb-6 p-4 rounded-3xl bg-[#d4a947]/10 border border-[#d4a947]/20">
             <Trophy className="text-[#d4a947] w-12 h-12" />
           </div>
-          <h2 className="text-3xl font-bold text-white/40 uppercase tracking-widest mb-4">Current Prize Pool</h2>
+          <h2 className="text-3xl font-bold text-white/60 uppercase tracking-widest mb-4">Current Prize Pool</h2>
           <div className="text-8xl md:text-[12rem] font-black tracking-tighter leading-none mb-10 text-white">
             £{prizePool.toLocaleString()}
           </div>
-          <p className="text-white/40 text-xl font-medium mb-12">
+          <p className="text-white/80 text-xl font-medium mb-12">
             Growing daily with <span className="text-white">1,452 active heroes</span> entered.
           </p>
           <Button asChild className="h-16 px-12 bg-white text-black hover:bg-white/90 font-black rounded-2xl text-xl">
@@ -140,7 +140,7 @@ export default function HomePage() {
               Impact Spotlight
             </span>
             <h2 className="text-5xl md:text-7xl font-black mb-8 leading-tight">Driven by <br />Pure Purpose.</h2>
-            <p className="text-white/40 text-xl leading-relaxed mb-12">
+            <p className="text-white/80 text-xl leading-relaxed mb-12">
               We've partnered with organizations that use sport as a vehicle for change. From junior links programs to environmental fairway conservation, your membership fuels their mission.
             </p>
             <div className="space-y-6 mb-12">
@@ -162,7 +162,7 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
               <div className="absolute bottom-10 left-10">
                 <p className="text-2xl font-bold mb-1">Impact Golf Program</p>
-                <p className="text-white/40 text-sm">Empowering 500+ youth through sport this year.</p>
+                <p className="text-white/60 text-sm">Empowering 500+ youth through sport this year.</p>
               </div>
             </div>
           </div>
@@ -234,7 +234,7 @@ function StepCard({ number, icon, title, desc }: StepCardProps) {
         <span className="text-4xl font-black text-white/10">{number}</span>
       </div>
       <h3 className="text-2xl font-bold mb-4">{title}</h3>
-      <p className="text-white/40 leading-relaxed text-sm">{desc}</p>
+      <p className="text-white/70 leading-relaxed text-sm">{desc}</p>
     </motion.div>
   );
 }
@@ -260,7 +260,7 @@ function TestimonialCard({ quote, author, role }: TestimonialCardProps) {
   return (
     <div className="p-10 rounded-[2.5rem] bg-white/[0.02] border border-white/5 relative">
       <Quote className="text-white/5 absolute top-10 right-10 w-12 h-12" />
-      <p className="text-white/60 text-lg leading-relaxed italic mb-10 relative z-10">"{quote}"</p>
+      <p className="text-white/90 text-lg leading-relaxed italic mb-10 relative z-10">"{quote}"</p>
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0f4c35] to-[#d4a947] opacity-50" />
         <div>
